@@ -4,23 +4,25 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Product;
+use App\Models\Flashsale;
 use Illuminate\Support\Facades\Validator;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
 
-class ProductController extends Controller
+class FlashsaleController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
-        confirmDelete('Hapus Data', 'Apakah anda yakin ingin menghapus data ini?');
-        return view('pages.admin.product.index', compact('products'));
+        $flashsales = Flashsale::all();
+
+        confirmDelete('Hapus Data!', 'Apakah Anda Yakin Ingin Menghapus Data Ini?');
+
+        return view('pages.admin.flashsale.index', compact('flashsales'));
     }
 
     public function create()
     {
-        return view('pages.admin.product.create');
+        return view('pages.admin.flashsale.create');
     }
 
     public function store(Request $request)
@@ -30,11 +32,11 @@ class ProductController extends Controller
             'price' => 'numeric',
             'category' => 'required',
             'description' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg',
+            'image' => 'required|mimes:png,jpeg,jpg',
         ]);
 
         if ($validator->fails()) {
-            Alert::error('Error', 'Pastikan semua kolom diisi dengan benar');
+            Alert::error('Error', 'Pastikan semua data terisi dengan benar');
             return redirect()->back();
         }
 
@@ -44,7 +46,7 @@ class ProductController extends Controller
             $image->move('images/', $imageName);
         }
 
-        $product= Product::create([
+        $flashsale = Flashsale::create([
             'name' => $request->name,
             'price' => $request->price,
             'category' => $request->category,
@@ -52,28 +54,29 @@ class ProductController extends Controller
             'image' => $imageName,
         ]);
 
-        if ($product) {
-            Alert::success('Success', 'Produk berhasil ditambahkan');
-            return redirect()->route('admin.product');
+        if ($flashsale) {
+            Alert::success('Success', 'Flashsale berhasil ditambahkan');
+            return redirect()->route('admin.flashsale');
         } else {
-            Alert::error('Error', 'Produk gagal ditambahkan');
+            Alert::error('Error', 'Flashsale gagal ditambahkan');
             return redirect()->back();
         }
     }
 
     public function detail($id)
     {
-        $product = Product::findOrFail($id);
+        $flashsale = Flashsale::findOrFail($id);
 
-        return view('pages.admin.product.detail', compact('product'));
+        return view('pages.admin.flashsale.detail', compact('flashsale'));
     }
 
     public function edit($id)
     {
-        $product = Product::findOrFail($id);
+        $flashsale = Flashsale::findOrFail($id);
 
-        return view('pages.admin.product.edit', compact('product'));
+        return view('pages.admin.flashsale.edit', compact('flashsale'));
     }
+
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -81,29 +84,30 @@ class ProductController extends Controller
             'price' => 'numeric',
             'category' => 'required',
             'description' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg',
+            'image' => 'nullable|mimes:png,jpeg,jpg',
         ]);
 
         if ($validator->fails()) {
-            Alert::error('Error', 'Pastikan semua kolom diisi dengan benar');
+            Alert::error('Error', 'Pastikan semua data terisi dengan benar');
             return redirect()->back();
         }
 
-        $product = Product::findOrFail($id);
+        $flashsale = Flashsale::findOrFail($id);
 
         if ($request->hasFile('image')) {
-            $oldpath = public_path('images/' . $product->image);
-            if (File::exists($oldpath)) {
-                File::delete($oldpath);
+            $oldPath = public_path('images/' . $flashsale->image);
+            if (File::exists($oldPath)) {
+                File::delete($oldPath);
             }
+
             $image = $request->file('image');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move('images/', $imageName);
         } else {
-            $imageName = $product->image;
+            $imageName = $flashsale->image;
         }
 
-        $product->update([
+        $flashsale->update([
             'name' => $request->name,
             'price' => $request->price,
             'category' => $request->category,
@@ -111,30 +115,31 @@ class ProductController extends Controller
             'image' => $imageName,
         ]);
 
-        if ($product) {
-            Alert::success('Berhasil', 'Produk berhasil diubah');
-            return redirect()->route('admin.product');
+        if ($flashsale) {
+            Alert::success('Success', 'Flashsale berhasil diubah');
+            return redirect()->route('admin.flashsale');
         } else {
-            Alert::error('Gagal', 'Produk gagal diubah');
+            Alert::error('Error', 'Flashsale gagal diubah');
             return redirect()->back();
         }
     }
+
     public function delete($id)
     {
-        $product = Product::findOrFail($id);
+        $flashsale = Flashsale::findOrFail($id);
 
-        $oldpath = public_path('images/' . $product->image);
+        $oldpath = public_path('images/' . $flashsale->image);
         if (File::exists($oldpath)) {
             File::delete($oldpath);
         }
 
-        $product->delete();
+        $flashsale->delete();
 
-        if ($product) {
-            Alert::success('Berhasil', 'Produk berhasil dihapus');
+        if ($flashsale) {
+            Alert::success('Berhasil', 'Flashsale berhasil dihapus');
             return redirect()->back();
         } else {
-            Alert::error('Gagal', 'Produk gagal dihapus');
+            Alert::error('Gagal', 'Flashsale gagal dihapus');
             return redirect()->back();
         }
     }
